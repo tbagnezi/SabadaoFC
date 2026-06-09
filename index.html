@@ -472,36 +472,44 @@
 
         function carregarDadosReaisDoSheets() {
             document.getElementById("loading-overlay").classList.remove("hidden");
-            fetch(`${API_URL}?ano=${anoAtivo}`, { redirect: 'follow' })
-                .then(res => res.json())
-                .then(function(response) {
-                    document.getElementById("loading-overlay").classList.add("hidden");
-                    if (response.success && response.dados) {
-                        let dadosPlanilha = response.dados;
-                        if (Array.isArray(dadosPlanilha)) {
-                            dadosPlanilha = { jogadores: dadosPlanilha, caixaBase: 0 };
-                        }
-
-                        jogadores = dadosPlanilha.jogadores || [];
-                        jogadores.forEach(j => { if (j.inativo === undefined) j.inativo = false; });
-                        avulsos = dadosPlanilha.avulsos || [];
-                        quadraValores = dadosPlanilha.quadra || {};
-                        arbitragemValores = dadosPlanilha.arbitragem || [{ semana: "Semana 1" }, { semana: "Semana 2" }, { semana: "Semana 3" }, { semana: "Semana 4" }, { semana: "Semana 5" }];
-                        extrasGastos = dadosPlanilha.extras || [];
-                        caixaTotalBase = dadosPlanilha.caixaBase !== undefined ? dadosPlanilha.caixaBase : (dadosPlanilha.caixa || 0);
-                        
-                        document.getElementById("input-caixa").value = caixaTotalBase;
-                        renderAll();
-                    } else {
-                        renderAll();
+            
+            const callbackName = "jsonpCallback_" + Date.now();
+            const script = document.createElement("script");
+            
+            window[callbackName] = function(response) {
+                document.getElementById("loading-overlay").classList.add("hidden");
+                delete window[callbackName];
+                document.body.removeChild(script);
+                
+                if (response.success && response.dados) {
+                    let dadosPlanilha = response.dados;
+                    if (Array.isArray(dadosPlanilha)) {
+                        dadosPlanilha = { jogadores: dadosPlanilha, caixaBase: 0 };
                     }
-                })
-                .catch(function(err) {
-                    document.getElementById("loading-overlay").classList.add("hidden");
-                    showToast("Erro ao carregar dados. Verifique a URL da API.");
-                    console.error("Erro fetch GET:", err);
+                    jogadores = dadosPlanilha.jogadores || [];
+                    jogadores.forEach(j => { if (j.inativo === undefined) j.inativo = false; });
+                    avulsos = dadosPlanilha.avulsos || [];
+                    quadraValores = dadosPlanilha.quadra || {};
+                    arbitragemValores = dadosPlanilha.arbitragem || [{ semana: "Semana 1" }, { semana: "Semana 2" }, { semana: "Semana 3" }, { semana: "Semana 4" }, { semana: "Semana 5" }];
+                    extrasGastos = dadosPlanilha.extras || [];
+                    caixaTotalBase = dadosPlanilha.caixaBase !== undefined ? dadosPlanilha.caixaBase : (dadosPlanilha.caixa || 0);
+                    document.getElementById("input-caixa").value = caixaTotalBase;
                     renderAll();
-                });
+                } else {
+                    renderAll();
+                }
+            };
+            
+            script.onerror = function() {
+                document.getElementById("loading-overlay").classList.add("hidden");
+                delete window[callbackName];
+                document.body.removeChild(script);
+                showToast("Erro ao carregar dados. Verifique a URL da API.");
+                renderAll();
+            };
+            
+            script.src = `${API_URL}?ano=${anoAtivo}&callback=${callbackName}`;
+            document.body.appendChild(script);
         }
 
         function alterarAnoFutebol(ano) {
