@@ -472,12 +472,11 @@
 
         function carregarDadosReaisDoSheets() {
             document.getElementById("loading-overlay").classList.remove("hidden");
-            const targetUrl = encodeURIComponent(`${API_URL}?ano=${anoAtivo}`);
-            fetch(`https://api.allorigins.win/get?url=${targetUrl}`)
+            const targetUrl = `${API_URL}?ano=${anoAtivo}`;
+            fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`)
                 .then(res => res.json())
-                .then(function(proxyResponse) {
+                .then(function(response) {
                     document.getElementById("loading-overlay").classList.add("hidden");
-                    const response = JSON.parse(proxyResponse.contents);
                     if (response.success && response.dados) {
                         let dadosPlanilha = response.dados;
                         if (Array.isArray(dadosPlanilha)) {
