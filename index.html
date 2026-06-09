@@ -473,7 +473,7 @@
         function carregarDadosReaisDoSheets() {
             document.getElementById("loading-overlay").classList.remove("hidden");
             const targetUrl = `${API_URL}?ano=${anoAtivo}`;
-            fetch(`https://corsproxy.io/?${encodeURIComponent(targetUrl)}`)
+            fetch(`https://sabadao-proxy.terenceagnezi.workers.dev/?url=${encodeURIComponent(targetUrl)}`)
                 .then(res => res.json())
                 .then(function(response) {
                     document.getElementById("loading-overlay").classList.add("hidden");
@@ -530,7 +530,7 @@
                         extras: extrasGastos
                     }
                 };
-                fetch(API_URL, {
+                fetch(`https://sabadao-proxy.terenceagnezi.workers.dev/?url=${encodeURIComponent(API_URL)}`, {
                     method: "POST",
                     redirect: 'follow',
                     body: JSON.stringify(pacote)
