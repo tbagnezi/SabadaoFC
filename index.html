@@ -472,7 +472,7 @@
 
         function carregarDadosReaisDoSheets() {
             document.getElementById("loading-overlay").classList.remove("hidden");
-            fetch(`${API_URL}?ano=${anoAtivo}`)
+            fetch(`${API_URL}?ano=${anoAtivo}`, { redirect: 'follow' })
                 .then(res => res.json())
                 .then(function(response) {
                     document.getElementById("loading-overlay").classList.add("hidden");
@@ -533,6 +533,7 @@
                 };
                 fetch(API_URL, {
                     method: "POST",
+                    redirect: 'follow',
                     body: JSON.stringify(pacote)
                 })
                 .then(res => res.json())
