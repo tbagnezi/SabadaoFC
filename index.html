@@ -26,13 +26,29 @@
         .custom-scrollbar::-webkit-scrollbar-track { background: #0a1410; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #10b981; border-radius: 4px; }
         
-        /* Coluna fixa sempre ativa, independente do tamanho da tela */
         .sticky-mobile { 
             position: sticky; 
             left: 0; 
             z-index: 20; 
             background-color: #0a1410;
-            border-right: 1px solid #10b981; 
+            border-right: 1px solid #10b981;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .col-first {
+            width: 30%;
+            min-width: 30%;
+            max-width: 30%;
+        }
+
+        @media (max-width: 767px) {
+            .col-first {
+                width: 135px !important;
+                min-width: 135px !important;
+                max-width: 135px !important;
+            }
         }
     </style>
 </head>
@@ -113,7 +129,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
                 <h2 class="text-2xl font-title font-bold text-white">Quadro Geral de Finanças</h2>
-                <p class="text-xs text-slate-400">Status de arrecadação financeira atualizada em tempo real do grupo.</p>
+                <p class="text-xs text-slate-400">Status de arrecadação financeira updated em tempo real do grupo.</p>
             </div>
             <div id="caixa-card" class="hidden w-full md:w-auto bg-brand-dark border border-emerald-950 rounded-2xl p-4 flex items-center gap-6 shadow-lg relative overflow-hidden">
                 <div class="absolute -right-2 -bottom-2 opacity-10">
@@ -161,8 +177,8 @@
                     </div>
                     
                     <div class="flex flex-wrap items-center gap-4 ml-auto flex-shrink-0">
-                        <span class="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-950/60 border border-emerald-900 text-brand-greenLight rounded-full text-xs"><i data-lucide="circle" class="w-2 h-2 fill-brand-green"></i> Pago</span>
-                        <span class="flex items-center gap-1.5 px-2 py-0.5 bg-red-950/40 border border-red-900 text-red-400 rounded-full text-xs"><i data-lucide="circle" class="w-2 h-2 fill-red-500"></i> Em Aberto</span>
+                        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-950/60 border border-emerald-900 text-brand-greenLight rounded-full text-xs"><i data-lucide="circle" class="w-2 h-2 fill-brand-green"></i> Pago</span>
+                        <span class="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 bg-red-950/40 border border-red-900 text-red-400 rounded-full text-xs"><i data-lucide="circle" class="w-2 h-2 fill-red-500"></i> Em Aberto</span>
                         
                         <div id="visualizador-toggle-valores" class="flex items-center gap-2 border-l border-emerald-950 pl-4">
                             <span class="text-[11px] text-slate-400 font-semibold uppercase">Exibir em R$</span>
@@ -171,7 +187,7 @@
                             </button>
                         </div>
                         
-                        <div id="container-subtotal-atletas" class="hidden md:flex items-center gap-2 pl-4 border-l border-emerald-950/60">
+                        <div id="container-subtotal-atletas" class="hidden md:hidden items-center gap-2 md:pl-4 md:border-l border-emerald-950/60">
                             <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Arrecadado:</span>
                             <span id="subtotal-atletas" class="text-sm font-bold text-brand-greenLight bg-emerald-950/60 px-3 py-1.5 rounded border border-emerald-900 shadow-inner whitespace-nowrap">R$ 0,00</span>
                         </div>
@@ -181,7 +197,7 @@
                 <div id="operador-filtros-atletas" class="hidden flex items-center justify-between gap-4 mb-4 p-3 bg-black/25 border border-emerald-950/60 rounded-xl">
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="filter" class="w-3.5 h-3.5 text-emerald-500"></i> Ordenar Atletas:</span>
-                        <button onclick="definirOrdenacao('atletas', 'A-Z')" id="btn-sort-atl-az" class="px-2.5 py-1 bg-emerald-950/40 border border-emerald-900 text-[11px] text-slate-200 rounded-lg">A-Z</button>
+                        <button onclick="definirOrdenacao('atletas', 'A-Z')" id="btn-sort-atl-az" class="px-2.5 py-1 bg-emerald-500 text-brand-darkest border border-emerald-400 text-[11px] rounded-lg font-bold">A-Z</button>
                         <button onclick="definirOrdenacao('atletas', 'Z-A')" id="btn-sort-atl-za" class="px-2.5 py-1 bg-emerald-950/40 border border-emerald-900 text-[11px] text-slate-200 rounded-lg">Z-A</button>
                         <button onclick="definirOrdenacao('atletas', 'padrao')" id="btn-sort-atl-padrao" class="px-2.5 py-1 bg-emerald-500 text-brand-darkest border border-emerald-400 text-[11px] rounded-lg font-bold">Padrão</button>
                     </div>
@@ -379,7 +395,7 @@
             <div class="w-12 h-12 rounded-full bg-emerald-950/80 border border-emerald-500 flex items-center justify-center text-brand-greenLight mx-auto mb-3">
                 <i data-lucide="shield-check" class="w-6 h-6"></i>
             </div>
-            <h4 class="font-title font-bold text-lg text-white mb-1">Acesso Atualizado</h4>
+            <h4 class="font-title font-bold text-lg text-white mb-1">Acesso Updated</h4>
             <p class="text-xs text-slate-300 leading-relaxed mb-4">Suas senhas foram alteradas com sucesso no navegador!</p>
             <button onclick="closeModal('senha-success-modal')" class="w-full bg-brand-green hover:bg-emerald-400 text-brand-darkest font-title font-bold py-2 rounded-lg text-xs transition-all">
                 Entendido
@@ -388,9 +404,7 @@
     </div>
 
     <script>
-        // ▼▼▼ COLE AQUI A URL DO SEU APPS SCRIPT APÓS O DEPLOY ▼▼▼
         const API_URL = "https://script.google.com/macros/s/AKfycbwPAsz0FNISCI7ROOUdX0KEa0hIIPu5Bk4xV5rxX-UxrW1wFv54M1Ff98VKed7mqOpoQQ/exec";
-        // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
         const isGoogleScript = API_URL !== "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
 
@@ -519,13 +533,13 @@
         }
 
         function copiarPixChave() {
-            const chave = document.getElementById("lbl-pix-key").innerText;
-            if (!chave) return;
-            navigator.clipboard.writeText(chave).then(function() {
+            const apiKey = document.getElementById("lbl-pix-key").innerText;
+            if (!apiKey) return;
+            navigator.clipboard.writeText(apiKey).then(function() {
                 showToast("Chave PIX copiada!");
             }).catch(function() {
                 const el = document.createElement("textarea");
-                el.value = chave;
+                el.value = apiKey;
                 document.body.appendChild(el);
                 el.select();
                 document.execCommand("copy");
@@ -573,6 +587,37 @@
             }
         }
 
+        function focarMesAtual() {
+            if (window.innerWidth >= 768) return;
+            const mesAtualIdx = new Date().getMonth();
+            const labelMesAtual = mesesLabels[mesAtualIdx];
+            const containers = document.querySelectorAll(".overflow-x-auto");
+            
+            containers.forEach(container => {
+                const headRow = container.querySelector("thead tr");
+                if (!headRow) return;
+                
+                const cells = headRow.cells;
+                let targetCell = null;
+                
+                for (let i = 1; i < cells.length; i++) {
+                    if (cells[i].innerText.trim() === labelMesAtual) {
+                        targetCell = cells[i];
+                        break;
+                    }
+                }
+                
+                if (targetCell) {
+                    const containerRect = container.getBoundingClientRect();
+                    const cellRect = targetCell.getBoundingClientRect();
+                    const currentStickyOffset = 135;
+                    
+                    const targetScrollLeft = container.scrollLeft + (cellRect.left - containerRect.left) - currentStickyOffset;
+                    container.scrollLeft = targetScrollLeft;
+                }
+            });
+        }
+
         function renderAll() {
             renderHeaders();
             renderPlayers();
@@ -581,6 +626,7 @@
             renderArbitragem();
             renderOutrosGastos();
             calcularCaixaGeral();
+            setTimeout(focarMesAtual, 100);
         }
 
         function renderHeaders() {
@@ -588,11 +634,11 @@
             const headerActions = isOpMode ? '<th class="py-3 px-2 text-center w-36">Ações</th>' : '';
             const defaultActions = isOpMode ? '<th class="py-3 px-2 text-center w-24">Ações</th>' : '';
             
-            document.getElementById("player-table-header").innerHTML = `<th class="py-3 px-4 min-w-[35vw] sticky-mobile">Jogador</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}${headerActions}`;
-            document.getElementById("avulsos-table-header").innerHTML = `<th class="py-3 px-4 min-w-[35vw] sticky-mobile">Descrição</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}${defaultActions}`;
-            document.getElementById("quadra-table-header").innerHTML = `<th class="py-3 px-4 min-w-[35vw] sticky-mobile">Quadra</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}`;
-            document.getElementById("arbitragem-table-header").innerHTML = `<th class="py-3 px-4 min-w-[35vw] sticky-mobile">Rodada</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}`;
-            document.getElementById("extras-table-header").innerHTML = `<th class="py-3 px-4 min-w-[35vw] sticky-mobile">Categoria</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}${defaultActions}`;
+            document.getElementById("player-table-header").innerHTML = `<th class="py-3 px-4 sticky-mobile col-first">Jogador</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}${headerActions}`;
+            document.getElementById("avulsos-table-header").innerHTML = `<th class="py-3 px-4 sticky-mobile col-first">Descrição</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}${defaultActions}`;
+            document.getElementById("quadra-table-header").innerHTML = `<th class="py-3 px-4 sticky-mobile col-first">Quadra</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}`;
+            document.getElementById("arbitragem-table-header").innerHTML = `<th class="py-3 px-4 sticky-mobile col-first">Rodada</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}`;
+            document.getElementById("extras-table-header").innerHTML = `<th class="py-3 px-4 sticky-mobile col-first">Categoria</th>${mesesLabels.map(m => `<th class="py-3 px-2 text-center w-20">${m}</th>`).join('')}${defaultActions}`;
         }
 
         function definirOrdenacao(tabela, tipo) {
@@ -656,13 +702,13 @@
 
         function salvarAtleta() {
             const nomeInput = document.getElementById("new-atleta-nome").value.trim();
-            if (!nomeInput) return showToast("Digite o nome.");
+            if (!nomeInput) return showToast("Digite the name.");
             const posicaoInput = document.querySelector('input[name="new-atleta-posicao"]:checked').value;
 
             if (atletaEditIndex >= 0) {
                 jogadores[atletaEditIndex].nome = nomeInput;
                 jogadores[atletaEditIndex].posicao = posicaoInput;
-                showToast("Atleta atualizado!");
+                showToast("Atleta updated!");
             } else {
                 const novoId = jogadores.length > 0 ? Math.max(...jogadores.map(j => j.id)) + 1 : 1;
                 const novoAtleta = { id: novoId, nome: nomeInput, posicao: posicaoInput, inativo: false };
@@ -701,7 +747,7 @@
                     avulsos[itemEditIndex].categoria = nomeInput;
                 } else {
                     const novoId = avulsos.length > 0 ? Math.max(...avulsos.map(o => o.id)) + 1 : 301;
-                    const novoItem = { id: novoId, category: nomeInput, categoria: nomeInput };
+                    const novoItem = { id: novoId, category: nomeInput, categoria: font-bold };
                     mesesLabels.forEach(m => { novoItem[m] = 0; });
                     avulsos.push(novoItem);
                 }
@@ -711,7 +757,7 @@
                     extrasGastos[itemEditIndex].categoria = nomeInput;
                 } else {
                     const novoId = extrasGastos.length > 0 ? Math.max(...extrasGastos.map(o => o.id)) + 1 : 501;
-                    const novoItem = { id: novoId, category: nomeInput, categoria: nomeInput };
+                    const novoItem = { id: novoId, category: nomeInput, categoria: 'font-bold' };
                     mesesLabels.forEach(m => { novoItem[m] = 0; });
                     extrasGastos.push(novoItem);
                 }
@@ -790,7 +836,7 @@
                 const svgLinha = `<svg class="w-4 h-4 ${player.inativo ? 'text-slate-500' : (verificarSePossuiDebito(player, anoAtivo) ? 'text-red-500' : 'text-slate-100')} inline-block" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18M6 18v2M10 18v2M14 18v2M18 18v2" /><path d="M3 18c0-3 2-5 5-5h3l5-4h4a1 1 0 0 1 1 1v6a2 2 0 0 1-2 2H3z" /><path d="M11 13l2-2M13 12l2-2" /></svg>`;
                 const iconHTML = player.posicao === 'goleiro' ? `<i data-lucide="hand" class="w-4 h-4 ${player.inativo ? 'text-slate-500' : (verificarSePossuiDebito(player, anoAtivo) ? 'text-red-500' : 'text-slate-100')}"></i>` : svgLinha;
 
-                tr.innerHTML = `<td class="py-2 px-4 font-semibold text-white sticky-mobile min-w-[35vw] border-r border-emerald-950"><div class="flex items-center gap-3">${iconHTML}<span class="truncate ${player.inativo ? 'line-through text-slate-500' : ''}">${player.nome}</span></div></td>${monthCellsHTML}${actionsCellHTML}`;
+                tr.innerHTML = `<td class="py-2 px-4 font-semibold text-white sticky-mobile col-first border-r border-emerald-950"><div class="flex items-center gap-3">${iconHTML}<span class="truncate ${player.inativo ? 'line-through text-slate-500' : ''}">${player.nome}</span></div></td>${monthCellsHTML}${actionsCellHTML}`;
                 tableBody.appendChild(tr);
             });
             setTimeout(() => { lucide.createIcons(); }, 10);
@@ -832,7 +878,7 @@
                         </div>
                     </td>` : '';
 
-                tr.innerHTML = `<td class="py-2 px-4 font-semibold text-slate-200 truncate sticky-mobile border-r border-emerald-950">${item.categoria}</td>${cellsHTML}${actionsCellHTML}`;
+                tr.innerHTML = `<td class="py-2 px-4 font-semibold text-slate-200 truncate sticky-mobile col-first border-r border-emerald-950">${item.categoria}</td>${cellsHTML}${actionsCellHTML}`;
                 tableBody.appendChild(tr);
             });
             setTimeout(() => { lucide.createIcons(); }, 10);
@@ -874,7 +920,7 @@
                         </div>
                     </td>` : '';
 
-                tr.innerHTML = `<td class="py-2 px-4 font-semibold text-slate-200 truncate sticky-mobile border-r border-emerald-950">${item.categoria}</td>${cellsHTML}${actionsCellHTML}`;
+                tr.innerHTML = `<td class="py-2 px-4 font-semibold text-slate-200 truncate sticky-mobile col-first border-r border-emerald-950">${item.categoria}</td>${cellsHTML}${actionsCellHTML}`;
                 tableBody.appendChild(tr);
             });
             setTimeout(() => { lucide.createIcons(); }, 10);
@@ -897,7 +943,7 @@
                     cellsHTML += `<td class="py-3 px-1 text-center"><span class="text-xs text-slate-400">${val===0?'-':val}</span></td>`;
                 }
             });
-            tr.innerHTML = `<td class="py-2 px-4 font-semibold text-white sticky-mobile border-r border-emerald-950">Lazarotto</td>${cellsHTML}`;
+            tr.innerHTML = `<td class="py-2 px-4 font-semibold text-white sticky-mobile col-first border-r border-emerald-950">Lazarotto</td>${cellsHTML}`;
             tableBody.appendChild(tr);
         }
 
@@ -919,7 +965,7 @@
                         cellsHTML += `<td class="py-3 px-1 text-center"><span class="text-xs text-slate-400">${val===0?'-':val}</span></td>`;
                     }
                 });
-                tr.innerHTML = `<td class="py-2 px-4 font-semibold text-slate-300 sticky-mobile border-r border-emerald-950">${item.semana}</td>${cellsHTML}`;
+                tr.innerHTML = `<td class="py-2 px-4 font-semibold text-slate-300 sticky-mobile col-first border-r border-emerald-950">${item.semana}</td>${cellsHTML}`;
                 tableBody.appendChild(tr);
             });
         }
@@ -1049,9 +1095,16 @@
             document.getElementById("lock-icon").setAttribute("data-lucide", "unlock");
             document.getElementById("lock-icon-mobile").setAttribute("data-lucide", "unlock");
             
-            // Mostrar subtotal de atletas nos modos operador
             const subtotalContainer = document.getElementById("container-subtotal-atletas");
-            if (subtotalContainer) subtotalContainer.classList.remove("hidden");
+            if (subtotalContainer) {
+                if (window.innerWidth >= 768) {
+                    subtotalContainer.classList.remove("hidden");
+                    subtotalContainer.classList.add("flex");
+                } else {
+                    subtotalContainer.classList.add("hidden");
+                    subtotalContainer.classList.remove("flex");
+                }
+            }
 
             abrirAbaLocal("caixa-card", true);
             abrirAbaLocal("avulso-section", true);
