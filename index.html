@@ -346,7 +346,7 @@
             </div>
 
         </div>
-    </main>
+    </nav>
 
     <div id="login-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div class="bg-brand-dark border border-emerald-800 rounded-2xl max-w-sm w-full p-6 relative">
@@ -462,7 +462,7 @@
         function carregarDadosReaisDoSheets() {
             document.getElementById("loading-overlay").classList.remove("hidden");
             const targetUrl = `${API_URL}?ano=${anoAtivo}`;
-            fetch(`https://sabadao-proxy.terenceagnezi.workers.dev/?url=${encodeURIComponent(targetUrl)}`)
+            fetch::(`https://sabadao-proxy.terenceagnezi.workers.dev/?url=${encodeURIComponent(targetUrl)}`)
                 .then(res => res.json())
                 .then(function(response) {
                     document.getElementById("loading-overlay").classList.add("hidden");
@@ -670,7 +670,7 @@
             renderPlayers();
             renderAvulsos();
             renderQuadraTable();
-            renderArbitragem();
+            renderAllArbitragem();
             renderOutrosGastos();
             calcularCaixaGeral();
             setTimeout(focarMesAtual, 100);
@@ -761,7 +761,7 @@
             if (atletaEditIndex >= 0) {
                 jogadores[atletaEditIndex].nome = nomeInput;
                 jogadores[atletaEditIndex].posicao = posicaoInput;
-                showToast("Atleta atualizado!");
+                showToast("Atleta updated!");
             } else {
                 const novoId = jogadores.length > 0 ? Math.max(...jogadores.map(j => j.id)) + 1 : 1;
                 const novoAtleta = { id: novoId, nome: nomeInput, posicao: posicaoInput, inativo: false };
@@ -861,7 +861,8 @@
                     
                     if (isOpMode) {
                         let inputVal = hasPaid ? rawVal : '';
-                        monthCellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${inputVal}" placeholder="${player.inativo ? '-' : '•'}" ${isReadMode ? 'disabled' : ''} onblur="salvarDadosGlobais()" oninput="atualizarPagamentoJogador(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${hasPaid ? 'border-brand-green/70 text-brand-greenLight font-bold' : 'border-red-950/40 text-red-400'} rounded p-1 text-center text-xs focus:border-brand-green outline-none"></td>`;
+                        // MODIFICAÇÃO: A função agora é chamada no 'oninput', calculando tudo em tempo real
+                        monthCellsHTML += `<td class="py-1 px-1 text-center"><input type="number" id="input-atl-${indexReal}-${mes}" value="${inputVal}" placeholder="${player.inativo ? '-' : '•'}" ${isReadMode ? 'disabled' : ''} onblur="salvarDadosGlobais()" oninput="atualizarPagamentoJogador(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${hasPaid ? 'border-brand-green/70 text-brand-greenLight font-bold' : 'border-red-950/40 text-red-400'} rounded p-1 text-center text-xs focus:border-brand-green outline-none"></td>`;
                     } else {
                         let bgClass = player.inativo ? "bg-slate-950/20 border-slate-900 text-slate-500" : "bg-red-950/20 border-red-950/30 text-red-400";
                         let conteudoExibicao = player.inativo ? "-" : "•";
@@ -904,7 +905,7 @@
             tableBody.innerHTML = "";
             let lista = [...avulsos];
             if (ordenacaoAvulsos === "A-Z") lista.sort((a, b) => a.categoria.localeCompare(b.categoria));
-            else if (ordenacaoAvulsos === "Z-A") lista.sort((a, b) => b.categoria.localeCompare(a.categoria));
+            else if (ordenacaoAvulsos === "Z-A") lista.sort((a, b) => b.categoria.localeCompare(b.categoria));
 
             const isOpMode = (appMode === "operador_admin" || appMode === "operador_leitor");
             const isReadMode = (appMode === "operador_leitor");
@@ -1003,7 +1004,7 @@
             tableBody.appendChild(tr);
         }
 
-        function renderArbitragem() {
+        function renderAllArbitragem() {
             const tableBody = document.getElementById("lista-arbitragem-body");
             if (!tableBody) return;
             tableBody.innerHTML = "";
@@ -1026,10 +1027,20 @@
             });
         }
 
+        // MODIFICAÇÃO: A função atualiza as variáveis internas de memória e recalcula o caixa e os subtotais na hora sem re-renderizar a tela inteira, trocando apenas as bordas do input ativo.
         function atualizarPagamentoJogador(i, m, v) { 
             jogadores[i][m] = v.trim() === "" ? "" : parseFloat(v); 
             calcularCaixaGeral(); 
-            renderPlayers();
+            
+            // Troca a cor da borda dinamicamente via ID para dar o feedback visual sem perder o cursor
+            const inputEl = document.getElementById(`input-atl-${i}-${m}`);
+            if (inputEl) {
+                if (v.trim() !== "") {
+                    inputEl.className = "w-16 bg-black/40 border border-brand-green/70 text-brand-greenLight font-bold rounded p-1 text-center text-xs focus:border-brand-green outline-none";
+                } else {
+                    inputEl.className = "w-16 bg-black/40 border border-red-950/40 text-red-400 rounded p-1 text-center text-xs focus:border-brand-green outline-none";
+                }
+            }
         }
         function atualizarQuadra(m, v) { quadraValores[m] = parseFloat(v) || 0; calcularCaixaGeral(); }
         function atualizarArbitragem(i, m, v) { arbitragemValores[i][m] = parseFloat(v) || 0; calcularCaixaGeral(); }
@@ -1127,7 +1138,7 @@
         }
         window.addEventListener('resize', BowserResizeHandler);
 
-        function ativarInterfaceOperador(isReadMode) {
+        function activarInterfaceOperador(isReadMode) {
             closeModal('login-modal');
             const badgeContent = isReadMode ? `<span class="h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span> DIRETORIA` : `<span class="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"></span> CFO`;
             const badgeClass = isReadMode ? "flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-950/35 border border-blue-800/40 text-xs text-blue-400 font-semibold" : "flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-950/35 border border-yellow-800/40 text-xs text-yellow-400 font-semibold";
