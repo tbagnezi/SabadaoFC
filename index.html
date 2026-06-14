@@ -586,7 +586,7 @@
                     document.getElementById("input-senha-leitor").value = "";
                     document.getElementById("senha-success-modal").classList.remove("hidden");
                 } else {
-                    showToast("❌ Falha na alteration: " + response.error);
+                    showToast("❌ Falha na alteração: " + response.error);
                 }
             })
             .catch(function() {
@@ -604,6 +604,7 @@
             }
         }
 
+        // Restante do motor de renderização nativo e tratamento de tabelas se mantém intacto
         function toggleMobileMenu() {
             document.getElementById("mobile-nav-modal").classList.toggle("hidden");
         }
@@ -843,12 +844,12 @@
             listaFinal.forEach((player) => {
                 const indexReal = jogadores.findIndex(orig => orig.id === player.id);
                 const tr = document.createElement("tr");
-                tr.className = player.inativo ? "bg-black/40 text-slate-500 opacity-60" : "hover:bg-white/[0.01]";
+                tr.className = "hover:bg-white/[0.01]";
 
                 let monthCellsHTML = "";
                 mesesLabels.forEach(mes => {
                     const rawVal = player[mes];
-                    const hasPaid = (rawVal !== "" && rawVal !== null && rawVal !== undefined);
+                    const hasPaid = (rawVal !== "" && rawVal !== null && rawVal !== undefined && rawVal !== 0);
                     const valorNum = parseFloat(rawVal) || 0;
                     
                     if (isOpMode) {
@@ -895,7 +896,7 @@
             tableBody.innerHTML = "";
             let lista = [...avulsos];
             if (ordenacaoAvulsos === "A-Z") lista.sort((a, b) => a.categoria.localeCompare(b.categoria));
-            else if (ordenacaoAvulsos === "Z-A") lista.sort((a, b) => b.categoria.localeCompare(b.categoria));
+            else if (ordenacaoAvulsos === "Z-A") lista.sort((a, b) => b.categoria.localeCompare(a.categoria));
 
             const isOpMode = (appMode === "operador_admin" || appMode === "operador_leitor");
             const isReadMode = (appMode === "operador_leitor");
@@ -937,7 +938,7 @@
             tableBody.innerHTML = "";
             let lista = [...extrasGastos];
             if (ordenacaoExtras === "A-Z") lista.sort((a, b) => a.categoria.localeCompare(b.categoria));
-            else if (ordenacaoExtras === "Z-A") lista.sort((a, b) => b.categoria.localeCompare(b.categoria));
+            else if (ordenacaoExtras === "Z-A") lista.sort((a, b) => b.categoria.localeCompare(a.categoria));
 
             const isOpMode = (appMode === "operador_admin" || appMode === "operador_leitor");
             const isReadMode = (appMode === "operador_leitor");
