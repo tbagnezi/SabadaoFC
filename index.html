@@ -346,7 +346,7 @@
             </div>
 
         </div>
-    </nav>
+    </main>
 
     <div id="login-modal" class="hidden fixed inset-0 bg-black/95 backdrop-blur-md flex items-center justify-center z-50 p-4">
         <div class="bg-brand-dark border border-emerald-800 rounded-2xl max-w-sm w-full p-6 relative">
@@ -434,6 +434,9 @@
         let arbitragemValores = [];
         let extrasGastos = [];
 
+        // ENGENHARIA DE DEBOUNCE: Ponteiro global de controle do delay da persistência em nuvem
+        let debounceTimerSalvar;
+
         window.onload = function() {
             const currentYear = new Date().getFullYear();
             let selectAno = document.getElementById("seletor-ano");
@@ -462,7 +465,7 @@
         function carregarDadosReaisDoSheets() {
             document.getElementById("loading-overlay").classList.remove("hidden");
             const targetUrl = `${API_URL}?ano=${anoAtivo}`;
-            fetch::(`https://sabadao-proxy.terenceagnezi.workers.dev/?url=${encodeURIComponent(targetUrl)}`)
+            fetch(`https://sabadao-proxy.terenceagnezi.workers.dev/?url=${encodeURIComponent(targetUrl)}`)
                 .then(res => res.json())
                 .then(function(response) {
                     document.getElementById("loading-overlay").classList.add("hidden");
@@ -488,6 +491,14 @@
                 });
         }
 
+        // CONTROLADOR DE ATRAÇO INTELEGENTE (800ms): Dispara o salvamento no Sheets apenas quando o usuário finaliza a digitação do bloco numérico
+        function agendarSalvarDadosGlobaisDebounced() {
+            clearTimeout(debounceTimerSalvar);
+            debounceTimerSalvar = setTimeout(function() {
+                salvarDadosGlobais();
+            }, 800); 
+        }
+
         function salvarDadosGlobais() {
             if (isGoogleScript && appMode === "operador_admin") {
                 const pacote = {
@@ -504,7 +515,7 @@
                 };
                 
                 document.getElementById("loading-overlay").classList.remove("hidden");
-                fetch(`https://sabadao-proxy.terenceagnezi.workers.dev/?url=${encodeURIComponent(API_URL)}`, {
+                fetch(isGoogleScript ? `https://sabadao-proxy.terenceagnezi.workers.dev/?url=${encodeURIComponent(API_URL)}` : "", {
                     method: "POST",
                     body: JSON.stringify(pacote)
                 })
@@ -861,8 +872,7 @@
                     
                     if (isOpMode) {
                         let inputVal = hasPaid ? rawVal : '';
-                        // MODIFICAÇÃO: A função agora é chamada no 'oninput', calculando tudo em tempo real
-                        monthCellsHTML += `<td class="py-1 px-1 text-center"><input type="number" id="input-atl-${indexReal}-${mes}" value="${inputVal}" placeholder="${player.inativo ? '-' : '•'}" ${isReadMode ? 'disabled' : ''} onblur="salvarDadosGlobais()" oninput="atualizarPagamentoJogador(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${hasPaid ? 'border-brand-green/70 text-brand-greenLight font-bold' : 'border-red-950/40 text-red-400'} rounded p-1 text-center text-xs focus:border-brand-green outline-none"></td>`;
+                        monthCellsHTML += `<td class="py-1 px-1 text-center"><input type="number" id="input-atl-${indexReal}-${mes}" value="${inputVal}" placeholder="${player.inativo ? '-' : '•'}" ${isReadMode ? 'disabled' : ''} oninput="atualizarPagamentoJogador(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${hasPaid ? 'border-brand-green/70 text-brand-greenLight font-bold' : 'border-red-950/40 text-red-400'} rounded p-1 text-center text-xs focus:border-brand-green outline-none"></td>`;
                     } else {
                         let bgClass = player.inativo ? "bg-slate-950/20 border-slate-900 text-slate-500" : "bg-red-950/20 border-red-950/30 text-red-400";
                         let conteudoExibicao = player.inativo ? "-" : "•";
@@ -905,7 +915,7 @@
             tableBody.innerHTML = "";
             let lista = [...avulsos];
             if (ordenacaoAvulsos === "A-Z") lista.sort((a, b) => a.categoria.localeCompare(b.categoria));
-            else if (ordenacaoAvulsos === "Z-A") lista.sort((a, b) => b.categoria.localeCompare(b.categoria));
+            else if (ordenacaoAvulsos === "Z-A") lista.sort((a, b) => b.categoria.localeCompare(a.categoria));
 
             const isOpMode = (appMode === "operador_admin" || appMode === "operador_leitor");
             const isReadMode = (appMode === "operador_leitor");
@@ -921,7 +931,7 @@
                     const isDebit = val < 0;
                     const borderStyle = val === 0 ? "border-emerald-900" : (isDebit ? "border-red-900 text-red-400 font-bold" : "border-brand-greenLight text-brand-greenLight font-bold");
                     if (isOpMode) {
-                        cellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${val !== 0 ? val : ''}" placeholder="0" ${isReadMode ? 'disabled' : ''} onblur="salvarDadosGlobais()" oninput="atualizarValorAvulso(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${borderStyle} rounded p-1 text-center text-xs outline-none"></td>`;
+                        cellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${val !== 0 ? val : ''}" placeholder="0" ${isReadMode ? 'disabled' : ''} oninput="atualizarValorAvulso(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${borderStyle} rounded p-1 text-center text-xs outline-none"></td>`;
                     } else {
                         cellsHTML += `<td class="py-3 px-1 text-center"><span class="text-xs ${isDebit ? 'text-red-400' : (val===0?'text-slate-500':'text-brand-greenLight')}">${val===0?'-':val}</span></td>`;
                     }
@@ -963,7 +973,7 @@
                     const isDebit = val < 0;
                     const borderStyle = val === 0 ? "border-emerald-900" : (isDebit ? "border-red-900 text-red-400 font-bold" : "border-brand-greenLight text-brand-greenLight font-bold");
                     if(isOpMode) {
-                        cellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${val !== 0 ? val : ''}" placeholder="0" ${isReadMode ? 'disabled ' : ''} onblur="salvarDadosGlobais()" oninput="atualizarOutrosGastos(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${borderStyle} rounded p-1 text-center text-xs outline-none"></td>`;
+                        cellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${val !== 0 ? val : ''}" placeholder="0" ${isReadMode ? 'disabled ' : ''} oninput="atualizarOutrosGastos(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${borderStyle} rounded p-1 text-center text-xs outline-none"></td>`;
                     } else {
                         cellsHTML += `<td class="py-3 px-1 text-center"><span class="text-xs ${isDebit ? 'text-red-400' : (val===0?'text-slate-500':'text-brand-greenLight')}">${val===0?'-':val}</span></td>`;
                     }
@@ -995,7 +1005,7 @@
             mesesLabels.forEach(mes => {
                 const val = quadraValores[mes] || 0;
                 if(isOpMode){
-                    cellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${val !== 0 ? val : ''}" placeholder="0" ${isReadMode ? 'disabled ' : ''} onblur="salvarDadosGlobais()" oninput="atualizarQuadra('${mes}', this.value)" class="w-16 bg-black/40 border border-emerald-900 rounded p-1 text-center text-xs outline-none"></td>`;
+                    cellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${val !== 0 ? val : ''}" placeholder="0" ${isReadMode ? 'disabled ' : ''} oninput="atualizarQuadra('${mes}', this.value)" class="w-16 bg-black/40 border border-emerald-900 rounded p-1 text-center text-xs outline-none"></td>`;
                 } else {
                     cellsHTML += `<td class="py-3 px-1 text-center"><span class="text-xs text-slate-400">${val===0?'-':val}</span></td>`;
                 }
@@ -1017,7 +1027,7 @@
                 mesesLabels.forEach(mes => {
                     const val = item[mes] || 0;
                     if(isOpMode) {
-                        cellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${val !== 0 ? val : ''}" placeholder="0" ${isReadMode ? 'disabled ' : ''} onblur="salvarDadosGlobais()" oninput="atualizarArbitragem(${index}, '${mes}', this.value)" class="w-16 bg-black/40 border border-emerald-900 rounded p-1 text-center text-xs outline-none"></td>`;
+                        cellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${val !== 0 ? val : ''}" placeholder="0" ${isReadMode ? 'disabled ' : ''} oninput="atualizarArbitragem(${index}, '${mes}', this.value)" class="w-16 bg-black/40 border border-emerald-900 rounded p-1 text-center text-xs outline-none"></td>`;
                     } else {
                         cellsHTML += `<td class="py-3 px-1 text-center"><span class="text-xs text-slate-400">${val===0?'-':val}</span></td>`;
                     }
@@ -1027,12 +1037,11 @@
             });
         }
 
-        // MODIFICAÇÃO: A função atualiza as variáveis internas de memória e recalcula o caixa e os subtotais na hora sem re-renderizar a tela inteira, trocando apenas as bordas do input ativo.
+        // RESTRUTURAÇÃO DO MOTOR GRÁFICO COM DEBOUNCE REAL: O caixa geral e o disparo do banco do Google só são calculados quando o usuário para de digitar por 800 milissegundos.
         function atualizarPagamentoJogador(i, m, v) { 
             jogadores[i][m] = v.trim() === "" ? "" : parseFloat(v); 
-            calcularCaixaGeral(); 
             
-            // Troca a cor da borda dinamicamente via ID para dar o feedback visual sem perder o cursor
+            // Altera visualmente a borda na hora de forma estática (Evita que o cursor perca o foco enquanto digita)
             const inputEl = document.getElementById(`input-atl-${i}-${m}`);
             if (inputEl) {
                 if (v.trim() !== "") {
@@ -1041,18 +1050,49 @@
                     inputEl.className = "w-16 bg-black/40 border border-red-950/40 text-red-400 rounded p-1 text-center text-xs focus:border-brand-green outline-none";
                 }
             }
+
+            // Agendamento inteligente do recálculo global das finanças e do despacho em nuvem
+            clearTimeout(debounceTimerSalvar);
+            debounceTimerSalvar = setTimeout(function() {
+                calcularCaixaGeral();
+                salvarDadosGlobais();
+            }, 800);
         }
-        function atualizarQuadra(m, v) { quadraValores[m] = parseFloat(v) || 0; calcularCaixaGeral(); }
-        function atualizarArbitragem(i, m, v) { arbitragemValores[i][m] = parseFloat(v) || 0; calcularCaixaGeral(); }
-        function atualizarOutrosGastos(i, m, v) { extrasGastos[i][m] = parseFloat(v) || 0; calcularCaixaGeral(); }
-        function atualizarValorAvulso(i, m, v) { avulsos[i][m] = v.trim() === "" ? 0 : parseFloat(v); calcularCaixaGeral(); }
+
+        function atualizarQuadra(m, v) { 
+            quadraValores[m] = parseFloat(v) || 0; 
+            clearTimeout(debounceTimerSalvar);
+            debounceTimerSalvar = setTimeout(function() { calcularCaixaGeral(); salvarDadosGlobais(); }, 800);
+        }
+
+        function atualizarArbitragem(i, m, v) { 
+            arbitragemValores[i][m] = parseFloat(v) || 0; 
+            clearTimeout(debounceTimerSalvar);
+            debounceTimerSalvar = setTimeout(function() { calcularCaixaGeral(); salvarDadosGlobais(); }, 800);
+        }
+
+        function atualizarOutrosGastos(i, m, v) { 
+            extrasGastos[i][m] = parseFloat(v) || 0; 
+            clearTimeout(debounceTimerSalvar);
+            debounceTimerSalvar = setTimeout(function() { calcularCaixaGeral(); salvarDadosGlobais(); }, 800);
+        }
+
+        function atualizarValorAvulso(i, m, v) { 
+            avulsos[i][m] = v.trim() === "" ? 0 : parseFloat(v); 
+            clearTimeout(debounceTimerSalvar);
+            debounceTimerSalvar = setTimeout(function() { calcularCaixaGeral(); salvarDadosGlobais(); }, 800);
+        }
 
         function excluirAtleta(i) { if (appMode === "operador_leitor") return; jogadores.splice(i, 1); renderPlayers(); salvarDadosGlobais(); showToast("Removido!"); }
         function excluirAvulso(i) { if (appMode === "operador_leitor") return; avulsos.splice(i, 1); renderAvulsos(); salvarDadosGlobais(); showToast("Removido!"); }
         function excluirLinhaGasto(i) { if (appMode === "operador_leitor") return; extrasGastos.splice(i, 1); renderOutrosGastos(); salvarDadosGlobais(); showToast("Removido!"); }
         function toggleInativoAtleta(i, checked) { jogadores[i].inativo = checked; renderPlayers(); salvarDadosGlobais(); }
 
-        function ajustarCaixaDireto(valor) { caixaTotalBase = parseFloat(valor) || 0; calcularCaixaGeral(); salvarDadosGlobais(); }
+        function ajustarCaixaDireto(valor) { 
+            caixaTotalBase = parseFloat(valor) || 0; 
+            clearTimeout(debounceTimerSalvar);
+            debounceTimerSalvar = setTimeout(function() { calcularCaixaGeral(); salvarDadosGlobais(); }, 800);
+        }
 
         function atualizarBadgeSubtotal(id, valor) {
             const el = document.getElementById(id);
@@ -1138,7 +1178,7 @@
         }
         window.addEventListener('resize', BowserResizeHandler);
 
-        function activarInterfaceOperador(isReadMode) {
+        function ativarInterfaceOperador(isReadMode) {
             closeModal('login-modal');
             const badgeContent = isReadMode ? `<span class="h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span> DIRETORIA` : `<span class="h-2 w-2 rounded-full bg-yellow-400 animate-pulse"></span> CFO`;
             const badgeClass = isReadMode ? "flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-950/35 border border-blue-800/40 text-xs text-blue-400 font-semibold" : "flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-950/35 border border-yellow-800/40 text-xs text-yellow-400 font-semibold";
