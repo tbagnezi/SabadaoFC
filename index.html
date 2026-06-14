@@ -194,7 +194,8 @@
                     </div>
                 </div>
 
-                <div id="operador-filtros-atletas" class="hidden flex items-center justify-between gap-4 mb-4 p-3 bg-black/25 border border-emerald-950/60 rounded-xl">
+                <!-- CORREÇÃO: Removida a classe hidden padrão. O controle de visibilidade passa a ser dinâmico via JS com base no breakpoint Desktop -->
+                <div id="operador-filtros-atletas" class="flex items-center justify-between gap-4 mb-4 p-3 bg-black/25 border border-emerald-950/60 rounded-xl">
                     <div class="flex items-center gap-2">
                         <span class="text-xs text-slate-400 font-semibold flex items-center gap-1"><i data-lucide="filter" class="w-3.5 h-3.5 text-emerald-500"></i> Ordenar Atletas:</span>
                         <button onclick="definirOrdenacao('atletas', 'A-Z')" id="btn-sort-atl-az" class="px-2.5 py-1 bg-emerald-500 text-brand-darkest border border-emerald-400 text-[11px] rounded-lg font-bold">A-Z</button>
@@ -448,6 +449,9 @@
             document.getElementById("input-pix-key").value = pixKey;
 
             updateSortButtons('atl', 'A-Z');
+            
+            // AJUSTE DE FLUXO: Executa a validação responsiva dos filtros na carga inicial da página no modo visitante
+            BowserResizeHandler();
 
             if (isGoogleScript) {
                 carregarDadosReaisDoSheets();
@@ -760,7 +764,7 @@
             if (atletaEditIndex >= 0) {
                 jogadores[atletaEditIndex].nome = nomeInput;
                 jogadores[atletaEditIndex].posicao = posicaoInput;
-                showToast("Atleta atualizado!");
+                showToast("Atleta updated!");
             } else {
                 const novoId = jogadores.length > 0 ? Math.max(...jogadores.map(j => j.id)) + 1 : 1;
                 const novoAtleta = { id: novoId, nome: nomeInput, posicao: posicaoInput, inativo: false };
@@ -859,7 +863,6 @@
                     const valorNum = parseFloat(rawVal) || 0;
                     
                     if (isOpMode) {
-                        // CORREÇÃO: Garante o valor cru amigável no input numérico para aceitar strings e o algarismo zero de forma estável.
                         let inputVal = hasPaid ? rawVal : '';
                         monthCellsHTML += `<td class="py-1 px-1 text-center"><input type="number" value="${inputVal}" placeholder="${player.inativo ? '-' : '•'}" ${isReadMode ? 'disabled' : ''} onblur="salvarDadosGlobais()" oninput="atualizarPagamentoJogador(${indexReal}, '${mes}', this.value)" class="w-16 bg-black/40 border ${hasPaid ? 'border-brand-green/70 text-brand-greenLight font-bold' : 'border-red-950/40 text-red-400'} rounded p-1 text-center text-xs focus:border-brand-green outline-none"></td>`;
                     } else {
@@ -1026,51 +1029,6 @@
             });
         }
 
-        function atualizarPagamentoJogador(i, m, v) { 
-            jogadores[i][m] = v.trim() === "" ? "" : parseFloat(v); 
-            calcularCaixaGeral(); 
-            renderPlayers();
-        }
-        function atualizarQuadra(m, v) { quadraValores[m] = parseFloat(v) || 0; calcularCaixaGeral(); }
-        function atualizarArbitragem(i, m, v) { arbitragemValores[i][m] = parseFloat(v) || 0; calcularCaixaGeral(); }
-        function atualizarOutrosGastos(i, m, v) { extrasGastos[i][m] = parseFloat(v) || 0; calcularCaixaGeral(); }
-        function atualizarValorAvulso(i, m, v) { avulsos[i][m] = parseFloat(v) || 0; calcularCaixaGeral(); }
-
-        function excluirAtleta(i) { if (appMode === "operador_leitor") return; jogadores.splice(i, 1); renderPlayers(); salvarDadosGlobais(); showToast("Removido!"); }
-        function excluirAvulso(i) { if (appMode === "operador_leitor") return; avulsos.splice(i, 1); renderAvulsos(); salvarDadosGlobais(); showToast("Removido!"); }
-        function excluirLinhaGasto(i) { if (appMode === "operador_leitor") return; extrasGastos.splice(i, 1); renderOutrosGastos(); salvarDadosGlobais(); showToast("Removido!"); }
-        function toggleInativoAtleta(i, checked) { jogadores[i].inativo = checked; renderPlayers(); salvarDadosGlobais(); }
-
-        function ajustarCaixaDireto(valor) { caixaTotalBase = parseFloat(valor) || 0; calcularCaixaGeral(); salvarDadosGlobais(); }
-
-        function atualizarBadgeSubtotal(id, valor) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.innerText = `R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-            if (valor < 0) {
-                el.className = "text-sm font-bold text-red-400 bg-red-950/40 px-3 py-1.5 rounded border border-red-900/60 shadow-inner whitespace-nowrap flex-shrink-0";
-            } else {
-                el.className = "text-sm font-bold text-brand-greenLight bg-emerald-950/60 px-3 py-1.5 rounded border border-emerald-900 shadow-inner whitespace-nowrap flex-shrink-0";
-            }
-        }
-
-        function calcularCaixaGeral() {
-            let totalAtletas = 0; jogadores.forEach(j => mesesLabels.forEach(m => totalAtletas += parseFloat(j[m]) || 0));
-            let totalQuadra = 0; mesesLabels.forEach(m => totalQuadra += quadraValores[m] || 0);
-            let totalArbitragem = 0; arbitragemValores.forEach(j => mesesLabels.forEach(m => totalArbitragem += j[m] || 0));
-            let totalExtras = 0; extrasGastos.forEach(j => mesesLabels.forEach(m => totalExtras += j[m] || 0));
-            let totalAvulsos = 0; avulsos.forEach(j => mesesLabels.forEach(m => totalAvulsos += j[m] || 0));
-
-            atualizarBadgeSubtotal("subtotal-atletas", totalAtletas);
-            atualizarBadgeSubtotal("subtotal-avulsos", totalAvulsos);
-            atualizarBadgeSubtotal("subtotal-quadra", (totalQuadra * -1)); 
-            atualizarBadgeSubtotal("subtotal-arbitragem", (totalArbitragem * -1)); 
-            atualizarBadgeSubtotal("subtotal-extras", totalExtras);
-
-            const caixa = caixaTotalBase + totalAtletas - (totalQuadra + totalArbitragem) + totalExtras + totalAvulsos;
-            document.getElementById("saldo-caixa").innerText = `R$ ${caixa.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        }
-
         function toggleOperatorMode() {
             if (appMode === "operador_admin" || appMode === "operador_leitor") {
                 appMode = "visualizador";
@@ -1086,19 +1044,12 @@
                 document.getElementById("mode-badge-mobile").innerHTML = `<span class="h-2 w-2 rounded-full bg-brand-green animate-pulse"></span> VISITANTE`;
                 document.getElementById("lock-icon-mobile").setAttribute("data-lucide", "lock");
 
-                ["caixa-card","avulso-section","quadra-section","operator-details-grid","arbitragem-section","gastos-section","operador-filtros-atletas","btn-add-atleta","container-subtotal-atletas"].forEach(id => {
+                ["caixa-card","avulso-section","quadra-section","operator-details-grid","arbitragem-section","gastos-section","btn-add-atleta","container-subtotal-atletas"].forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.classList.add("hidden");
                 });
                 
-                const filtroAtletas = document.getElementById("operador-filtros-atletas");
-                if (filtroAtletas) {
-                    if (window.innerWidth >= 768) {
-                        filtroAtletas.classList.remove("hidden");
-                    } else {
-                        filtroAtletas.classList.add("hidden");
-                    }
-                }
+                BowserResizeHandler();
 
                 ["visualizador-topo-container","visualizador-toggle-valores"].forEach(id => {
                     const el = document.getElementById(id);
@@ -1120,6 +1071,7 @@
             else el.classList.add("hidden");
         }
 
+        // MOTOR RESPONSIVO: Força a barra a aparecer no desktop e sumir no mobile quando for visitante
         function BowserResizeHandler() {
             if (appMode === "visualizador") {
                 const filtroAtletas = document.getElementById("operador-filtros-atletas");
